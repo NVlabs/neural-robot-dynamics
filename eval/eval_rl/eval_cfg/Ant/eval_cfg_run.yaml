@@ -1,0 +1,23 @@
+policies:
+  neural:
+    policy_folder: ../../pretrained_models/RL_policies/Ant/run/
+    policy_path: nn/AntPPO.pth
+
+simulators:
+  gt:
+    env_mode: ground-truth
+  neural:
+    env_mode: neural
+    model_path: ../../pretrained_models/NeRD_models/Ant/model/nn/model.pt
+
+env:
+  env_name: Ant
+  env_mode: ground-truth
+  max_episode_length: 500
+  reward_bias: 0.
+
+  warp_env_cfg:
+    task: run
+    obs_type: dflex
+    random_reset: True
+    camera_tracking: True

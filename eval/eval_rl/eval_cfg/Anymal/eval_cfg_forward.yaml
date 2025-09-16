@@ -1,0 +1,23 @@
+policies:
+  neural:
+    policy_folder: ../../pretrained_models/RL_policies/Ant/forward_walk/
+    policy_path: nn/AnymalPPO.pth
+
+simulators:
+  gt:
+    env_mode: ground-truth
+  neural:
+    env_mode: neural
+    model_path: ../../pretrained_models/NeRD_models/Anymal/model/nn/model.pt
+
+env:  
+  env_name: AnymalJointPositionControl
+  env_mode: ground-truth
+  max_episode_length: 1000
+  reward_bias: 0.
+
+  warp_env_cfg:
+    task: forward
+    obs_type: dflex
+    random_reset: True
+    camera_tracking: True

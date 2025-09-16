@@ -1,0 +1,68 @@
+env:
+  env_name: FrankaReach
+  num_envs: 512
+  neural_integrator_cfg: 
+    name: TransformerNeuralIntegrator
+    states_frame: world
+    states_embedding_type: identical
+    prediction_type: relative
+    orientation_prediction_parameterization: quaternion
+    num_states_history: 10     # number of states and actions to pass into model. Default: 1 means use current state and action
+  
+algorithm:
+  name: SequenceModelTrainer
+  num_epochs: 1000
+  num_iters_per_epoch: 5000
+  sample_sequence_length: 10 # the length to sample sequence from dataset
+  batch_size: 512
+  num_valid_batches: 100
+  truncate_grad: True
+  grad_norm: 1.0
+  optimizer:
+    lr_start: 1e-3
+    lr_end: 1e-4
+    lr_schedule: linear
+
+  dataset:
+    train_dataset_path: PATH/TO/TRAIN_DATASET.hdf5
+    valid_datasets: 
+      exp_trajectory: PATH/TO/VALID_DATASET.hdf5
+    max_capacity: 100000000
+    num_data_workers: 4
+  
+  eval:
+    mode: sampler
+    rollout_horizon: 10
+    num_rollouts: 2048
+    passive: False
+
+inputs:
+  low_dim: [
+    states_embedding,
+    joint_acts
+  ]
+  
+network:
+  normalize_input: True
+  normalize_output: True
+  
+  encoder:
+    low_dim:
+      layer_sizes: []
+      activation: relu
+      layernorm: False
+
+  transformer:
+    block_size: 32
+    n_layer: 6       # number of transformer blocks
+    n_head: 12        # num transformer heads
+    n_embd: 192       # size of input embedding
+    dropout: 0.0      # for pretraining 0 is good, for finetuning try 0.1+
+    bias: False       # do we use bias inside LayerNorm and Linear layers?
+
+  model:
+    output_tanh: False
+    mlp: 
+      layer_sizes: [64]
+      activation: relu
+      layernorm: False

@@ -1,0 +1,57 @@
+env:
+  env_mode: neural
+  env_name: Cartpole
+  max_episode_length: 300
+  model_path: ../../pretrained_models/NeRD_models/Cartpole/model/nn/model.pt
+  num_envs: 2048
+  reward_bias: 5.0
+  warp_env_cfg:
+    random_reset: true
+    seed: 1
+    setup_renderer: false
+rl:
+  config:
+    bounds_loss_coef: 0.0001
+    clip_value: true
+    critic_coef: 4
+    e_clip: 0.2
+    entropy_coef: 0.0
+    full_experiment_name: CartpolePPO/rss/small-bias/01-26-2025-18-45-38
+    gamma: 0.99
+    grad_norm: 1.0
+    horizon_length: 32
+    kl_threshold: 0.008
+    learning_rate: 0.0003
+    lr_schedule: adaptive
+    max_epochs: 500
+    mini_epochs: 8
+    minibatch_size: 8192
+    name: CartpolePPO
+    normalize_advantage: true
+    normalize_input: true
+    normalize_value: true
+    player:
+      determenistic: true
+      games_num: 12
+      num_actors: 3
+      print_stats: true
+    reward_shaper:
+      scale_value: 1.0
+    save_best_after: 10
+    save_frequency: 50
+    score_to_win: 20000
+    seq_length: 8
+    tau: 0.95
+    truncate_grads: true
+  network:
+    mlp:
+      activation: tanh
+      d2rl: false
+      initializer:
+        name: default
+      regularizer:
+        name: None
+      units:
+      - 64
+      - 64
+seed: 1

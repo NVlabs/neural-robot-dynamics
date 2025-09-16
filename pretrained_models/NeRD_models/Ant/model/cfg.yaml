@@ -1,0 +1,87 @@
+algorithm:
+  batch_size: 512
+  dataset:
+    max_capacity: 10000000
+    num_data_workers: 4
+    train_dataset_path: ../../data/datasets/Ant/exp-2_fixed-ground/trajectory_len-100_10M_train.hdf5
+    valid_datasets:
+      exp_trajectory: ../../data/datasets/Ant/exp-2_fixed-ground/trajectory_len-100_valid.hdf5
+      passive_trajectory: ../../data/datasets/Ant/trajectory_len-100_passive_valid.hdf5
+  eval:
+    dataset_path: ../../data/datasets/Ant/exp-2_fixed-ground/trajectory_len-100_valid.hdf5
+    mode: dataset
+    num_rollouts: 2048
+    passive: false
+    rollout_horizon: 10
+  grad_norm: 1.0
+  name: SequenceModelTrainer
+  num_epochs: 1000
+  num_iters_per_epoch: 5000
+  num_valid_batches: 100
+  optimizer:
+    lr_end: 1e-4
+    lr_schedule: linear
+    lr_start: 1e-3
+  sample_sequence_length: 10
+  seed: 0
+  truncate_grad: true
+cli:
+  cfg: ./cfg/Ant/exp-2_fixed-ground/transformer.yaml
+  cfg_overrides: algorithm.dataset.max_capacity 10000000 algorithm.dataset.train_dataset_path
+    ../../data/datasets/Ant/exp-2_fixed-ground/trajectory_len-100_10M_train.hdf5 network.transformer.n_layer
+    6 network.transformer.n_embd 384 algorithm.sample_sequence_length 10 env.neural_integrator_cfg.num_states_history
+    10 env.neural_integrator_cfg.orientation_prediction_parameterization quaternion
+    env.neural_integrator_cfg.states_frame body env.neural_integrator_cfg.anchor_frame_step
+    every
+  checkpoint: null
+  device: cuda:3
+  eval_interval: 1
+  log_interval: 1
+  logdir: ../../data/trained_models/Ant/exp-2_fixed-ground/1-9/transformer//ngc_obs-full_dataset-len-100_n-layer-6_n-embd-384_seq-length-10_rot-repr-quat_states_frame-every-body/run-0
+  no_time_stamp: true
+  render: false
+  save_interval: 50
+  test: false
+  train: true
+env:
+  env_name: Ant
+  neural_integrator_cfg:
+    anchor_frame_step: every
+    name: TransformerNeuralIntegrator
+    num_states_history: 10
+    orientation_prediction_parameterization: quaternion
+    prediction_type: relative
+    states_embedding_type: identical
+    states_frame: body
+  num_envs: 512
+  render: false
+inputs:
+  low_dim:
+  - states_embedding
+  - contact_normals
+  - contact_points_1
+  - contact_depths
+  - joint_acts
+  - gravity_dir
+network:
+  encoder:
+    low_dim:
+      activation: relu
+      layer_sizes: []
+      layernorm: false
+  model:
+    mlp:
+      activation: relu
+      layer_sizes:
+      - 64
+      layernorm: false
+    output_tanh: false
+  normalize_input: true
+  normalize_output: true
+  transformer:
+    bias: false
+    block_size: 32
+    dropout: 0.0
+    n_embd: 384
+    n_head: 12
+    n_layer: 6

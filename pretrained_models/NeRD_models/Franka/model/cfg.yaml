@@ -1,0 +1,78 @@
+algorithm:
+  batch_size: 512
+  dataset:
+    max_capacity: 100000000
+    num_data_workers: 4
+    train_dataset_path: ../../data/datasets/FrankaReach/rss/trajectory_len-100_10M_train.hdf5
+    valid_datasets:
+      exp_trajectory: ../../data/datasets/FrankaReach/rss/trajectory_len-100_valid.hdf5
+      passive_trajectory: ../../data/datasets/FrankaReach/rss/trajectory_len-100_passive_valid.hdf5
+  eval:
+    mode: sampler
+    num_rollouts: 2048
+    passive: false
+    rollout_horizon: 10
+  grad_norm: 1.0
+  name: SequenceModelTrainer
+  num_epochs: 1000
+  num_iters_per_epoch: 5000
+  num_valid_batches: 100
+  optimizer:
+    lr_end: 1e-4
+    lr_schedule: linear
+    lr_start: 1e-3
+  sample_sequence_length: 10
+  seed: 0
+  truncate_grad: true
+cli:
+  cfg: ./cfg/FrankaReach/rss/transformer.yaml
+  cfg_overrides: algorithm.dataset.train_dataset_path ../../data/datasets/FrankaReach/rss/trajectory_len-100_10M_train.hdf5
+    network.transformer.n_layer 6 network.transformer.n_embd 384 algorithm.sample_sequence_length
+    10 env.neural_integrator_cfg.num_states_history 10
+  checkpoint: null
+  device: cuda:2
+  eval_interval: 1
+  log_interval: 1
+  logdir: ../../data/trained_models/Franka/1-16-rss/transformer/ngc_n-layer-6_n-embd-384_seq-length-10/run-0
+  no_time_stamp: true
+  render: false
+  save_interval: 50
+  test: false
+  train: true
+env:
+  env_name: FrankaReach
+  neural_integrator_cfg:
+    name: TransformerNeuralIntegrator
+    num_states_history: 10
+    orientation_prediction_parameterization: quaternion
+    prediction_type: relative
+    states_embedding_type: identical
+    states_frame: world
+  num_envs: 512
+  render: false
+inputs:
+  low_dim:
+  - states_embedding
+  - joint_acts
+network:
+  encoder:
+    low_dim:
+      activation: relu
+      layer_sizes: []
+      layernorm: false
+  model:
+    mlp:
+      activation: relu
+      layer_sizes:
+      - 64
+      layernorm: false
+    output_tanh: false
+  normalize_input: true
+  normalize_output: true
+  transformer:
+    bias: false
+    block_size: 32
+    dropout: 0.0
+    n_embd: 384
+    n_head: 12
+    n_layer: 6
