@@ -15,7 +15,7 @@ In this paper, we propose NeRD (Neural Robot Dynamics), learned robot-specific d
 
 ## Installation
 - The code has been tested on Ubuntu 20.04 with Python 3.8 and CUDA 12.9.
-- `git clone xxx`
+- `git clone git@github.com:NVlabs/neural-robot-dynamics.git`
 - Create an Anaconda virtual environment (recommended)
   ```
   conda env create -n nerd python=3.8
