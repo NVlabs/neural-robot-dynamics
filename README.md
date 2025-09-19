@@ -14,14 +14,14 @@ In this paper, we propose NeRD (Neural Robot Dynamics), learned robot-specific d
 
 
 ## Installation
-- The code has been tested on Ubuntu 20.04 with Python 3.8 and CUDA 12.9.
+- The code has been tested on Ubuntu 20.04 with Python 3.8.20 and CUDA 12.9.
 - `git clone git@github.com:NVlabs/neural-robot-dynamics.git`
 - Create an Anaconda virtual environment (recommended)
   ```
-  conda env create -n nerd python=3.8
+  conda create -n nerd python=3.8.20
   conda activate nerd
   ```
-- Install PyTorch ([PyTorch 2.2.2](https://pytorch.org/get-started/previous-versions/#linux-and-windows-13 has been tested, but other versions of PyTorch might also work)
+- Install [PyTorch 2.2.2](https://pytorch.org/get-started/previous-versions/#linux-and-windows-14) (the tested version)
 - Install other depandent packages:
   ```
   pip install -r requirements.txt
