@@ -2,13 +2,6 @@
 .vscode
 __pycache__/
 .idea/
-trained_models/
-datasets/
-runs/
-pretrained/
-*.mp4
-*.gif
-pretrained/
 *.npy
 *.zip
 *.usd
