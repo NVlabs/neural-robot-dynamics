@@ -44,7 +44,7 @@ python example_neural_solver_passive.py --env-name Ant
 ```
 
 ### RL Policy Example
-The script [`examples/example_neural_solver_rl.py`] rollouts pretrained RL policies in Newton with NeRD solvers.
+The script [`examples/example_neural_solver_rl.py`](examples/example_neural_solver_rl.py) rollouts pretrained RL policies in Newton with NeRD solvers.
 ```
 cd examples
 python example_neural_solver_rl.py --playback ../pretrained_models/RL_policies/Cartpole/0/nn/CartpolePPO.pth --num-envs 1 --num-games 1 --render
