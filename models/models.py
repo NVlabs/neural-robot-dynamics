@@ -17,7 +17,6 @@ import torch
 import torch.nn as nn
 from models.base_models import MLPBase, LSTMBase, GRUBase
 from models.model_transformer import GPT, GPTConfig
-from utils.running_mean_std import RunningMeanStd
 
 class MLPDeterministic(nn.Module):
     def __init__(
@@ -133,6 +132,17 @@ class ModelMixedInput(nn.Module):
         
         self.output_tanh = network_cfg.get('output_tanh', False)
     
+    # For compatibility with the old models trained from warp.sim
+    def fix_input_names(self): 
+        if 'joint_acts' in self.encoders:
+            self.encoders['joint_f'] = self.encodders.pop('joint_acts')
+        if 'joint_acts' in self.input_rms:
+            self.input_rms['joint_f'] = self.input_rms.pop('joint_acts')
+        if 'joint_acts' in self.low_dim_input_names:
+            self.low_dim_input_names[
+                self.low_dim_input_names.index('joint_acts')
+            ] = 'joint_f'
+
     def construct_input_encoders(
         self,
         input_cfg,
@@ -159,6 +169,30 @@ class ModelMixedInput(nn.Module):
                 device = device
             )
             encoders['low_dim'] = low_dim_encoder
+            
+        '''
+        rgb inputs
+        '''
+        rgb_input_names = input_cfg.get('rgb', [])
+        for rgb_input_name in rgb_input_names:
+            assert rgb_input_name in input_sample
+            assert len(input_sample[rgb_input_name].shape) in [4, 5] # (B, C, H, W) or (B, T, C, H, W)
+            assert 'rgb' in encoder_cfg
+            if rgb_input_name in encoder_cfg['rgb']:
+                config = encoder_cfg['rgb'][rgb_input_name]
+            elif 'default' in encoder_cfg['rgb']:
+                config = encoder_cfg['rgb']['default']
+            else:
+                raise ValueError(
+                    f"No '{rgb_input_name}' nor 'default' in encoder_cfg['rgb']"
+                )
+
+            rgb_encoder = CNNBase(
+                input_sample[rgb_input_name].shape[1:], 
+                config, 
+                device = device
+            )
+            encoders[rgb_input_name] = rgb_encoder
         
         feature_dim = 0
         for input_name in encoders:
@@ -196,6 +230,10 @@ class ModelMixedInput(nn.Module):
     def evaluate(self, input_dict, deterministic = False): # Single-step forward, input in shape (B, T, input_dim), T = 1 for non-transformer models
         if self.normalize_input:
             for obs_key in self.input_rms.keys():
+                # input_obs_key = obs_key
+                # if obs_key == 'joint_acts': # Compatibility with the old models
+                #     input_obs_key = 'joint_f'
+                # input_dict[obs_key] = self.input_rms[obs_key].normalize(input_dict[input_obs_key])
                 input_dict[obs_key] = self.input_rms[obs_key].normalize(input_dict[obs_key])
 
         features = self.extract_input_features(input_dict)
@@ -211,6 +249,7 @@ class ModelMixedInput(nn.Module):
             output = torch.tanh(output)
 
         if self.normalize_output:
+            # output = self.output_rms.normalize(output, un_norm = False)
             output = self.output_rms.normalize(output, un_norm = True)
 
         return output[:, -1:, :]

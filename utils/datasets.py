@@ -150,6 +150,8 @@ class TrajectoryDataset(Dataset):
                 continue
             data = dataset['data'][key][:, :num_trajectories, ...].astype('float32') # shape (T, B, dim1, dim2, ...)
             data = np.swapaxes(data, 0, 1) # shape (B, T, dim1, dim2, ...)
+            if key == "joint_acts": # compatibility with the warp dataset
+                key = "joint_f"
             self.dataset[key] = data.reshape(data.shape[0], data.shape[1], -1) # shape (B, T, dim)
         
         if self.traj_lengths is None:
@@ -188,3 +190,4 @@ class TrajectoryDataset(Dataset):
 
     def shuffle(self):
         pass
+

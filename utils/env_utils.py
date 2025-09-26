@@ -20,28 +20,24 @@ base_dir = os.path.abspath(
 )
 sys.path.append(base_dir)
 
-from envs.abstract_contact_environment import AbstractContactEnvironment
-import envs.warp_sim_envs as warp_sim_envs
-from envs.warp_sim_envs import RenderMode
+from envs.fixed_contact_environment import FixedContactEnvironment
+import envs.newton_envs as newton_envs
+from envs.newton_envs import RenderMode
 
 ENV_CLS = {
-    "Cartpole": getattr(warp_sim_envs, "CartpoleEnvironment", None),
-    "PendulumWithContact": getattr(warp_sim_envs, "PendulumWithContactEnvironment", None),
-    "FrankaReach": getattr(warp_sim_envs, "FrankaPandaEnvironment", None),
-    "Ant": getattr(warp_sim_envs, "AntEnvironment", None),
-    "CubeToss": getattr(warp_sim_envs, "CubeTossingEnvironment", None),
-    "Anymal": getattr(warp_sim_envs, "AnymalEnvironment", None),
-    "AnymalJointPositionControl": getattr(warp_sim_envs, "AnymalJointPositionControlEnvironment", None),
+    "Cartpole": getattr(newton_envs, "CartpoleEnvironment", None),
+    "Ant": getattr(newton_envs, "AntEnvironment", None)
 }
 
-def create_abstract_contact_env(
+def create_fixed_contact_env(
     env_name,
     num_envs,
+    use_graph_capture=False,
     requires_grad=False,
     device="cuda:0",
     render=False,
     **extra_env_args,
-) -> AbstractContactEnvironment:
+) -> FixedContactEnvironment:
     assert env_name in ENV_CLS, f"No environment named {env_name}."
     env_args = {}
     env_args["num_envs"] = num_envs
@@ -56,4 +52,4 @@ def create_abstract_contact_env(
         env_args[key] = extra_env_args[key]
     env = ENV_CLS[env_name](**env_args)
         
-    return AbstractContactEnvironment(env)
+    return FixedContactEnvironment(env, use_graph_capture=use_graph_capture)

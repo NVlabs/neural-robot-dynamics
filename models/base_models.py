@@ -16,7 +16,6 @@
 import torch
 import torch.nn as nn
 from models import model_utils
-import numpy as np
 
 class MLPBase(nn.Module):
     def __init__(self, in_features, network_cfg, device='cuda:0'):

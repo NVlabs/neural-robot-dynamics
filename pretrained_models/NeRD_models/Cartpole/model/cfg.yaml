@@ -24,25 +24,10 @@ algorithm:
   sample_sequence_length: 10
   seed: 0
   truncate_grad: true
-cli:
-  cfg: ./cfg/Cartpole/rss/transformer.yaml
-  cfg_overrides: algorithm.dataset.train_dataset_path ../../data/datasets/Cartpole/rss/trajectory_len-100_5M_train.hdf5
-    network.transformer.n_layer 6 network.transformer.n_embd 192 algorithm.sample_sequence_length
-    10 env.neural_integrator_cfg.num_states_history 10
-  checkpoint: null
-  device: cuda:5
-  eval_interval: 1
-  log_interval: 1
-  logdir: ../../data/trained_models/Cartpole/1-14/transformer//ngc_n-layer-6_n-embd-192_seq-length-10/run-0
-  no_time_stamp: true
-  render: false
-  save_interval: 50
-  test: false
-  train: true
 env:
   env_name: Cartpole
-  neural_integrator_cfg:
-    name: TransformerNeuralIntegrator
+  neural_solver_cfg:
+    name: TransformerNeuralSolver
     num_states_history: 10
     orientation_prediction_parameterization: quaternion
     prediction_type: relative

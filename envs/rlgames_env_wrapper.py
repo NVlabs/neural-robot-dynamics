@@ -28,8 +28,8 @@ import warp as wp
 import numpy as np
 
 from envs.neural_environment import NeuralEnvironment
-from envs.warp_sim_envs import RenderMode
-from envs.warp_sim_envs.wrapper_utils import (
+from envs.newton_envs import RenderMode
+from envs.newton_envs.wrapper_utils import (
     cost2reward, get_observation_space, get_action_space
 )
 from rl_games.common import env_configurations, vecenv
@@ -98,13 +98,6 @@ class RlgamesEnvironment(vecenv.IVecEnv):
         self.reward_scale = reward_scale
         self.reward_bias = reward_bias
 
-        if self.neural_env.use_graph_capture:
-            with wp.ScopedCapture() as capture:
-                self.neural_env.update()
-            self.graph = capture.graph
-        else:
-            self.graph = None
-
         self.extras = {}
         self.obs_dict = {}
 
@@ -129,7 +122,7 @@ class RlgamesEnvironment(vecenv.IVecEnv):
             self.obs_buf = wp.empty(
                 (self.num_envs, self.num_obs), dtype=wp.float32, device=self.device
             )
-        self.neural_env.setup_renderer()
+        self.neural_env.setup_viewer()
         self.observation_space = get_observation_space(
             self.neural_env, render_mode, use_gymnasium=False
         )
@@ -176,11 +169,8 @@ class RlgamesEnvironment(vecenv.IVecEnv):
 
         self.action_buf.assign(wp.array(actions))
         
-        if self.neural_env.use_graph_capture:
-            wp.capture_launch(self.graph)
-        else:
-            for _ in range(self.control_steps):
-                self.neural_env.step(actions)
+        for _ in range(self.control_steps):
+            self.neural_env.step(actions)
 
         # reward is single-step, not cumulative
         self.cost_buf.zero_()

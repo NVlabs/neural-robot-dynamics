@@ -2,13 +2,13 @@ env:
   env_mode: neural
   env_name: Cartpole
   max_episode_length: 300
-  model_path: ../../pretrained_models/NeRD_models/Cartpole/model/nn/model.pt
+  model_path: ../pretrained_models/NeRD_models/Cartpole/model/nn/model.pt
   num_envs: 2048
   reward_bias: 5.0
-  warp_env_cfg:
+  newton_env_cfg:
     random_reset: true
     seed: 1
-    setup_renderer: false
+    setup_viewer: false
 rl:
   config:
     bounds_loss_coef: 0.0001

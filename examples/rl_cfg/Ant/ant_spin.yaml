@@ -1,0 +1,63 @@
+env:
+  env_name: Ant
+  env_mode: neural
+  model_path: ../pretrained_models/NeRD_models/Ant/model/nn/model.pt
+  num_envs: 2048
+
+  max_episode_length: 500
+  reward_bias: 0.
+    
+  newton_env_cfg:
+    task: spin
+    obs_type: dflex
+    random_reset: True
+    camera_tracking: True
+  
+rl:
+  config:
+    name: AntPPO
+    max_epochs: 1000
+    horizon_length: 32
+    normalize_input: True
+    normalize_value: True
+    reward_shaper:
+      scale_value: 1.
+    normalize_advantage: True
+    gamma: 0.99
+    tau: 0.95
+    learning_rate: 0.0003
+    lr_schedule: adaptive
+    kl_threshold: 0.008
+    score_to_win: 3000000
+    save_best_after: 10
+    save_frequency: 50
+    grad_norm: 1.0
+    entropy_coef: 0.0
+    truncate_grads: True
+    e_clip: 0.2
+    minibatch_size: 16384
+    mini_epochs: 5
+    critic_coef: 4
+    clip_value: True
+    seq_length: 8
+    bounds_loss_coef: 0.0001
+    
+    player:
+      determenistic: True
+      games_num: 2
+      num_actors: 3
+      print_stats: True
+  
+  network:
+    mlp:
+      units: [128, 64, 32]
+      activation: relu
+      d2rl: False
+      initializer:
+        name: default
+      regularizer:
+        name: None
+  
+
+
+
