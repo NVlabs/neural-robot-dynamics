@@ -8,6 +8,10 @@ This repository contains the implementation for the paper [Neural Robot Dynamics
 
 In this paper, we propose NeRD (Neural Robot Dynamics), learned robot-specific dynamics models for predicting future states for articulated rigid bodies under contact constraints. NeRD uniquely replaces the low-level dynamics and contact solvers in an analytical simulator and employs a robot-centric and spatially-invariant simulation state representation. In this repository, we demonstrate how to integrate NeRD as an interchangeable backend solver within [NVIDIA Warp](https://developer.nvidia.com/warp-python). 
 
+> [!Note]
+> See the work-in-progress branch ([nerd_newton_dev](https://github.com/NVlabs/neural-robot-dynamics/tree/nerd_newton_dev)) for ongoing integration of NeRD as a backend solver within [Newton](https://github.com/newton-physics/newton) physics.
+
+
 <p align="center">
     <img src="figures/overview.png" alt="overview" width="800" />
 </p>
