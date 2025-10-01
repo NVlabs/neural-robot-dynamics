@@ -41,6 +41,13 @@ In this paper, we propose NeRD (Neural Robot Dynamics), learned robot-specific d
 
 We released pretrained NeRD models to quickly test out neural dynamics without training from scratch. We also released the RL policies that are trained in the NeRD-integrated simulator and are used in the Experiment section in the paper. Both pretrained NeRD models and RL policies are in the [`pretrained_models`](pretrained_models/) folder.
 
+> [!Note]
+> If you noticed the neural models under `pretrained_models` folders are not properly cloned, you may need to use `git lfs` for those files by running 
+> ```
+> git lfs install
+> git lfs pull
+> ```
+
 We also provide evaluation scripts of the metrics used in the Experiment section of the paper.
 
 ### Passive Motion Evaluation
