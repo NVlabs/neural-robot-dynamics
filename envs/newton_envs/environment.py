@@ -365,6 +365,10 @@ class Environment:
             self.customize_state(self.state_0)
             self.customize_state(self.state_1)
             self.simulate = self.simulate_nograd
+            if self.use_graph_capture:
+                self.state_temp = self.model.state()
+            else:
+                self.state_temp = None
 
             newton.eval_fk(
                 self.model, 
@@ -587,22 +591,43 @@ class Environment:
         self.sim_time += self.sim_dt
         self.sim_step += 1
 
-    def simulate_nograd(self):
+    def simulate_nograd(self):        
         self.before_simulate()
-
+        if self.use_graph_capture:
+            state_0_dict = self.state_0.__dict__
+            state_1_dict = self.state_1.__dict__
+            state_temp_dict = (
+                self.state_temp.__dict__ if self.state_temp is not None else None
+            )
         for i in range(self.sim_substeps):
             if self.handle_collisions_once_per_step and i > 0:
                 eval_collisions = False
             else:
                 eval_collisions = True
+                
             self.step(
                 self.state_0,
                 self.state_1,
                 self.control,
                 eval_collisions=eval_collisions,
             )
-            self.state_0, self.state_1 = self.state_1, self.state_0
- 
+        
+            if i < self.sim_substeps - 1 or not self.use_graph_capture:
+                # we can just swap the state references
+                self.state_0, self.state_1 = self.state_1, self.state_0
+            elif self.use_graph_capture:
+                assert (
+                    hasattr(self, "state_temp") and self.state_temp is not None
+                ), "state_temp must be allocated when using graph capture"
+                # swap states by actually copying the state arrays to make sure the graph capture works
+                for key, value in state_0_dict.items():
+                    if isinstance(value, wp.array):
+                        if key not in state_temp_dict:
+                            state_temp_dict[key] = wp.empty_like(value)
+                        state_temp_dict[key].assign(value)
+                        state_0_dict[key].assign(state_1_dict[key])
+                        state_1_dict[key].assign(state_temp_dict[key])
+                        
         self.after_simulate()
 
     def update(self):

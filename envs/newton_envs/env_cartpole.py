@@ -136,7 +136,7 @@ class CartpoleEnvironment(Environment):
             os.path.join(os.path.dirname(__file__), "assets", path),
             xform=wp.transform(
                 p=(0.0, 0.0, 0.0),
-                q=wp.quat_from_axis_angle((0.0, 0.0, 1.0), wp.pi * 0.5),
+                q=wp.quat_from_axis_angle(wp.vec3(0.0, 0.0, 1.0), wp.pi * 0.5),
             ),
             floating=False,
             enable_self_collisions=False,

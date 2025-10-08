@@ -303,6 +303,7 @@ class AntEnvironment(Environment):
     sim_substeps_euler = 32
     sim_substeps_featherstone = 16
     sim_substeps_xpbd = 8
+    sim_substeps_mujoco = 10
 
     xpbd_settings = dict(iterations=1)
     mujoco_settings = dict(

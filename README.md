@@ -24,9 +24,14 @@ conda create -n nerd_newton python=3.12
 conda activate nerd_newton
 ```
 
-Step 3: Install Newton and Warp as instructed in [Newton Physics Repo](https://github.com/newton-physics/newton).
+Step 3: Install [PyTorch 2.5.1](https://pytorch.org/get-started/previous-versions/#v251) (the tested version).
+```
+pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu124
+```
 
-Step 4: Install rl-games
+Step 4: Install Newton and Warp as instructed in [Newton Physics Repo](https://github.com/newton-physics/newton).
+
+Step 5: Install rl-games
 ```
 pip install rl-games
 ```
@@ -34,6 +39,13 @@ pip install rl-games
 ## Examples
 
 We released pretrained NeRD models of Cartpole and Ant (pretrained from Warp sim) to demonstrate the integration of the neural dynamics solver into Newton. 
+
+> [!Note]
+> If you noticed the neural models under `pretrained_models` folders are not properly cloned, you may need to use `git lfs` for those files by running 
+> ```
+> git lfs install
+> git lfs pull
+> ```
 
 ### Passive Motion Example
 The script [`examples/example_neural_solver_passive.py`](examples/example_neural_solver_passive.py) rollouts the pretrained NeRD model for passive motions.
