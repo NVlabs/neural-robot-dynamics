@@ -102,8 +102,8 @@ python generate_dataset_contact_free.py --env-name Cartpole --num-transitions 10
 #### Ant
 ```
 cd generate
-python generate_dataset_ant.py --env-name Cartpole --num-transitions 1000000 --dataset-name trajectory_len-100_1M_train.hdf5 --trajectory-length 100 --num-envs 2048 --seed 0
-python generate_dataset_ant.py --env-name Cartpole --num-transitions 1000000 --dataset-name trajectory_len-100_valid.hdf5 --trajectory-length 100 --num-envs 2048 --seed 10
+python generate_dataset_ant.py --env-name Ant --num-transitions 1000000 --dataset-name trajectory_len-100_1M_train.hdf5 --trajectory-length 100 --num-envs 2048 --seed 0
+python generate_dataset_ant.py --env-name Ant --num-transitions 1000000 --dataset-name trajectory_len-100_valid.hdf5 --trajectory-length 100 --num-envs 2048 --seed 10
 ```
 
 ### Training
