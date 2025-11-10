@@ -11,4 +11,4 @@ scipy==1.10.1
 trimesh==4.7.1
 wandb
 rl-games
-warp-lang
+warp-lang==1.8.0

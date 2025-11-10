@@ -490,6 +490,10 @@ class NeuralEnvironment():
         self.export_video = False
         frame_rate = round(1. / self.env.frame_dt)
         images_path = os.path.join(self.video_tmp_folder, r"%d.png")
+        
+        if not os.path.exists(os.path.dirname(self.video_export_filename)):
+            os.makedirs(os.path.dirname(self.video_export_filename), exist_ok = False)
+            
         os.system("ffmpeg -i {} -vf palettegen palette.png".format(images_path))
         os.system("ffmpeg -framerate {} -i {} "
                   "-i palette.png -lavfi paletteuse {}".format(
