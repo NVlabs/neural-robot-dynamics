@@ -402,6 +402,7 @@ def generate_waypoints(cfg):
             z += step * math.sin(heading)
 
             waypoints.append([x, z])
+        return waypoints
     else:
         raise ValueError(f"Unknown waypoint_mode: {mode}")
 
