@@ -196,6 +196,8 @@ def load_rl_config(args):
             "step_length",
             "step_length_max",
             "turn_angle_degree",
+            "zigzag_angle_degree",
+            "zigzag_turn_degree",
             "radius",
         ]:
             warp_env_cfg.pop(key, None)
@@ -347,8 +349,7 @@ def evaluate_policy(runner, policy_path):
     return results
 
 
-# Incremental polar stepping
-# This is often more useful for walking, because each new waypoint is built from the previous one:
+# Incremental polar stepping for walking waypoint courses.
 def generate_waypoints(cfg):
     mode = cfg.get("waypoint_mode", "fixed_list")
 
@@ -402,6 +403,47 @@ def generate_waypoints(cfg):
             z += step * math.sin(heading)
 
             waypoints.append([x, z])
+        return waypoints
+
+    elif mode == "polar_zigzag":
+        num_waypoints = cfg.get("num_waypoints", 5)
+        min_step = cfg.get("step_length", 1.0)
+        max_step = cfg.get("step_length_max", 3.0)
+        zigzag_angle_deg = cfg.get("zigzag_angle_degree", 30.0)
+        turn_deg = cfg.get("zigzag_turn_degree", 15.0)
+        if not 0.0 < turn_deg <= 15.0:
+            raise ValueError(
+                "polar_zigzag requires zigzag_turn_degree in the range (0, 15]."
+            )
+        if zigzag_angle_deg < turn_deg:
+            raise ValueError(
+                "polar_zigzag requires zigzag_angle_degree to be at least "
+                "zigzag_turn_degree."
+            )
+
+        x, z = 0.0, 0.0
+        heading = 0.0
+        max_heading = math.radians(zigzag_angle_deg)
+        turn_step = math.radians(turn_deg)
+        turn_direction = -1.0 if torch.rand(1).item() < 0.5 else 1.0
+        waypoints = []
+
+        # Sweep from one side to the other in bounded increments. This permits
+        # a wide zigzag while each heading change remains within the limit.
+        for _ in range(num_waypoints):
+            heading += turn_direction * turn_step
+            if heading >= max_heading:
+                heading = max_heading
+                turn_direction = -1.0
+            elif heading <= -max_heading:
+                heading = -max_heading
+                turn_direction = 1.0
+
+            step = min_step + torch.rand(1).item() * (max_step - min_step)
+            x += step * math.cos(heading)
+            z += step * math.sin(heading)
+            waypoints.append([x, z])
+
         return waypoints
     else:
         raise ValueError(f"Unknown waypoint_mode: {mode}")
