@@ -382,6 +382,7 @@ def generate_waypoints(cfg):
         return waypoints
 
     elif mode == "polar_random":
+        num_waypoints = cfg.get("num_waypoints", 5)
         heading = 0.0
         x, z = 0.0, 0.0
 
