@@ -462,6 +462,7 @@ class AnymalEnvironment(Environment):
         obs_type="dflex",
         camera_tracking=False,
         heading_yaws=None,
+        inter_robot_collisions=False,
         waypoints=None,
         waypoint_tolerance=0.75,
         terminate_on_last_waypoint=False,
@@ -474,6 +475,12 @@ class AnymalEnvironment(Environment):
         self.obs_type = obs_type
         self.camera_tracking = camera_tracking
         self.task = task
+        self.inter_robot_collisions = inter_robot_collisions
+        if self.inter_robot_collisions:
+            # Build every robot in one collision group and use Warp's dynamic
+            # contact generation so articulated robots can collide with each other.
+            self.separate_collision_group_per_env = False
+            self.separate_ground_contacts = False
         num_envs = kwargs.get("num_envs", self.num_envs)
         self.waypoints = None
         self.waypoint_tolerance = float(waypoint_tolerance)
@@ -543,7 +550,12 @@ class AnymalEnvironment(Environment):
             self._sync_heading_quats()
             return
 
-        env_mask = env_ids.numpy()
+        # Warp's boolean buffer may materialize as 0/1 values in NumPy. Cast
+        # explicitly so a false reset mask cannot be interpreted as index 0
+        # and reset waypoint state on every control step.
+        env_mask = np.asarray(env_ids.numpy(), dtype=bool)
+        if not env_mask.any():
+            return
         self.current_waypoint_ids[env_mask] = 0
         self.completed_waypoint_route[env_mask] = False
         self.waypoint_start_steps[env_mask] = -1

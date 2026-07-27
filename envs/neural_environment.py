@@ -69,6 +69,12 @@ class NeuralEnvironment():
 
         # create abstract contact environment
         print_info(f'[NeuralEnvironment] Creating abstract contact environment: {env_name}.')
+        inter_robot_collisions = bool(warp_env_cfg.get("inter_robot_collisions", False))
+        if inter_robot_collisions and default_env_mode == "neural":
+            raise ValueError(
+                "inter_robot_collisions is supported only in ground-truth mode; "
+                "NeRD currently models fixed robot-to-ground contacts only."
+            )
         self.env = create_abstract_contact_env(
                         env_name = env_name, 
                         num_envs = num_envs, 
@@ -81,34 +87,36 @@ class NeuralEnvironment():
         self.sim_substeps_gt = self.env.sim_substeps
         self.integrator_type_gt = self.env.integrator_type
 
-        # create neural integrator
+        # A shared physics scene uses Warp's dynamic contacts and has no fixed
+        # contact representation for the neural integrator.
         neural_integrator_type = neural_integrator_cfg.get('name', 'NeuralIntegrator')
         self.sim_substeps_neural = 1
-        if neural_integrator_type == 'NeuralIntegrator':
+        self.integrator_neural = None
+        if not inter_robot_collisions and neural_integrator_type == 'NeuralIntegrator':
             self.integrator_neural = NeuralIntegrator(
                     model = self.env.model,
                     neural_model = neural_model,
                     **neural_integrator_cfg
                 )
-        elif neural_integrator_type == 'StatefulNeuralIntegrator':
+        elif not inter_robot_collisions and neural_integrator_type == 'StatefulNeuralIntegrator':
             self.integrator_neural = StatefulNeuralIntegrator(
                 model = self.env.model,
                 neural_model = neural_model,
                 **neural_integrator_cfg
             )
-        elif neural_integrator_type == 'TransformerNeuralIntegrator':
+        elif not inter_robot_collisions and neural_integrator_type == 'TransformerNeuralIntegrator':
             self.integrator_neural = TransformerNeuralIntegrator(
                 model = self.env.model,
                 neural_model = neural_model,
                 **neural_integrator_cfg
             )
-        elif neural_integrator_type == 'RNNNeuralIntegrator':
+        elif not inter_robot_collisions and neural_integrator_type == 'RNNNeuralIntegrator':
             self.integrator_neural = RNNNeuralIntegrator(
                 model = self.env.model,
                 neural_model = neural_model,
                 **neural_integrator_cfg
             )
-        else:
+        elif not inter_robot_collisions:
             raise NotImplementedError
         
         if neural_model is not None:
@@ -329,6 +337,10 @@ class NeuralEnvironment():
             self.env.sim_dt = self.env.frame_dt / self.env.sim_substeps
             self.env.integrator_type = self.integrator_type_gt
         elif self.env_mode  == 'neural':
+            if self.integrator_neural is None:
+                raise ValueError(
+                    "NeRD mode is unavailable when inter_robot_collisions is enabled."
+                )
             self.env.integrator = self.integrator_neural
             self.env.sim_substeps = self.sim_substeps_neural
             self.env.sim_dt = self.env.frame_dt / self.env.sim_substeps

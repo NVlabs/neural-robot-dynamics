@@ -205,13 +205,17 @@ class AbstractContactEnvironment():
     - contact_depth: the penetration depth between the two shapes
     - other contact information: contact thickness, contact offset0, contact offset1
     """
-    def __init__(self, env: Environment):
+    def __init__(self, env: Environment, native_contact_detection: bool = False):
         # create wrapper
         super().__setattr__('_wrapped_env', env)
-        
+        super().__setattr__('native_contact_detection', native_contact_detection)
         self.eval_collisions = True
-    
-        self.initialize_contacts(self.model)
+
+        # NeRD uses a fixed, robot-to-ground contact representation.  A shared
+        # physics scene instead needs Warp to find contacts dynamically so one
+        # robot can collide with another.
+        if not self.native_contact_detection:
+            self.initialize_contacts(self.model)
 
         self.time_report = TimeReport(cuda_synchronize = False)
         self.time_report.add_timers(
@@ -332,6 +336,10 @@ class AbstractContactEnvironment():
     # New simulation update function using customized collision detection 
     # to fill the contact information for integrator
     def update(self):
+        if self.native_contact_detection:
+            self._wrapped_env.update()
+            return
+
         self.before_update()
 
         with TimeProfiler(self.time_report, 'collision_detection'):
