@@ -465,6 +465,8 @@ class AnymalEnvironment(Environment):
         waypoints=None,
         waypoint_tolerance=0.75,
         terminate_on_last_waypoint=False,
+        startup_heading_hold_seconds=0.0,
+        startup_heading_ramp_seconds=0.0,
         **kwargs
     ):
         self.seed = seed
@@ -476,8 +478,13 @@ class AnymalEnvironment(Environment):
         self.waypoints = None
         self.waypoint_tolerance = float(waypoint_tolerance)
         self.terminate_on_last_waypoint = terminate_on_last_waypoint
+        self.startup_heading_hold_seconds = float(startup_heading_hold_seconds)
+        self.startup_heading_ramp_seconds = float(startup_heading_ramp_seconds)
+        if self.startup_heading_hold_seconds < 0.0 or self.startup_heading_ramp_seconds < 0.0:
+            raise ValueError("Startup heading hold and ramp durations must be non-negative.")
         self.current_waypoint_ids = np.zeros(num_envs, dtype=np.int32)
         self.completed_waypoint_route = np.zeros(num_envs, dtype=bool)
+        self.waypoint_start_steps = np.full(num_envs, -1, dtype=np.int64)
         if heading_yaws is None:
             heading_yaws = [0.0] * num_envs
         if len(heading_yaws) != num_envs:
@@ -490,6 +497,7 @@ class AnymalEnvironment(Environment):
         if waypoints is not None:
             self.waypoints = self._format_waypoints(waypoints)
         self.heading_yaws = np.asarray(heading_yaws, dtype=np.float32)
+        self.initial_heading_yaws = self.heading_yaws.copy()
         super().__init__(**kwargs)
         self._sync_heading_quats()
         self.waypoint_terminate_mask = wp.zeros(
@@ -529,16 +537,22 @@ class AnymalEnvironment(Environment):
         if env_ids is None:
             self.current_waypoint_ids.fill(0)
             self.completed_waypoint_route.fill(False)
+            self.waypoint_start_steps.fill(-1)
+            self.heading_yaws[:] = self.initial_heading_yaws
             wp.to_torch(self.waypoint_terminate_mask).zero_()
+            self._sync_heading_quats()
             return
 
         env_mask = env_ids.numpy()
         self.current_waypoint_ids[env_mask] = 0
         self.completed_waypoint_route[env_mask] = False
+        self.waypoint_start_steps[env_mask] = -1
+        self.heading_yaws[env_mask] = self.initial_heading_yaws[env_mask]
         mask_tensor = wp.to_torch(self.waypoint_terminate_mask)
         mask_tensor[env_mask] = False
+        self._sync_heading_quats()
 
-    def _update_waypoint_tracking(self, state: wp.sim.State):
+    def _update_waypoint_tracking(self, state: wp.sim.State, step: int = 0):
         if self.waypoints is None:
             return
 
@@ -549,6 +563,9 @@ class AnymalEnvironment(Environment):
         for env_id in range(self.num_envs):
             if self.completed_waypoint_route[env_id]:
                 continue
+
+            if self.waypoint_start_steps[env_id] < 0:
+                self.waypoint_start_steps[env_id] = step
 
             pos_x = float(joint_q[env_id, 0])
             pos_z = float(joint_q[env_id, 2])
@@ -579,6 +596,23 @@ class AnymalEnvironment(Environment):
             delta_x = float(target[0] - pos_x)
             delta_z = float(target[2] - pos_z)
             desired_yaw = -math.atan2(delta_z, delta_x)
+
+            # Keep the reset heading while the gait settles, then blend into
+            # WP0's bearing. This prevents an instantaneous steering request
+            # on the first control step of an episode.
+            elapsed_seconds = (
+                step - self.waypoint_start_steps[env_id]
+            ) * self.frame_dt
+            if waypoint_id == 0:
+                if elapsed_seconds < self.startup_heading_hold_seconds:
+                    desired_yaw = float(self.initial_heading_yaws[env_id])
+                elif self.startup_heading_ramp_seconds > 0.0:
+                    ramp_elapsed = elapsed_seconds - self.startup_heading_hold_seconds
+                    ramp_fraction = min(
+                        1.0, max(0.0, ramp_elapsed / self.startup_heading_ramp_seconds)
+                    )
+                    initial_yaw = float(self.initial_heading_yaws[env_id])
+                    desired_yaw = initial_yaw + ramp_fraction * (desired_yaw - initial_yaw)
             if not np.isclose(self.heading_yaws[env_id], desired_yaw):
                 self.heading_yaws[env_id] = desired_yaw
                 heading_changed = True
@@ -738,7 +772,7 @@ class AnymalEnvironment(Environment):
     ):
         if not self.uses_generalized_coordinates:
             wp.sim.eval_ik(self.model, state, state.joint_q, state.joint_qd)
-        self._update_waypoint_tracking(state)
+        self._update_waypoint_tracking(state, step)
         if self.task == "forward":
             wp.launch(
                 anymal_forward_cost,
@@ -805,7 +839,7 @@ class AnymalEnvironment(Environment):
         if not self.uses_generalized_coordinates:
             # evaluate generalized coordinates
             wp.sim.eval_ik(self.model, state, state.joint_q, state.joint_qd)
-        self._update_waypoint_tracking(state)
+        self._update_waypoint_tracking(state, step)
         if self.obs_type == "simple":
             wp.launch(
                 compute_observations_anymal_simple,

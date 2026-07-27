@@ -14,12 +14,16 @@ env:
     camera_tracking: true
     heading_yaws: [0.0]
     waypoint_mode: polar_zigzag
-    # A 30-degree zigzag is reached through 15-degree heading changes.
+    # A 30-degree zigzag is reached through gentler 10-degree heading changes.
     zigzag_angle_degree: 30.0
-    zigzag_turn_degree: 15.0
+    zigzag_turn_degree: 10.0
     step_length: 1.0
     step_length_max: 2.0
-    waypoint_tolerance: 0.75
+    # Avoid switching targets while the robot is still far from a corner.
+    waypoint_tolerance: 0.35
+    # Let the gait settle, then blend from the reset heading into WP0's bearing.
+    startup_heading_hold_seconds: 0.5
+    startup_heading_ramp_seconds: 0.5
     terminate_on_last_waypoint: true
 
 rl:
