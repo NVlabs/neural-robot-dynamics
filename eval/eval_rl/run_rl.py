@@ -443,7 +443,7 @@ def generate_waypoints(cfg):
             x += step * math.cos(heading)
             z += step * math.sin(heading)
             waypoints.append([x, z])
-
+        print("Generated zigzag waypoints:", waypoints)
         return waypoints
     else:
         raise ValueError(f"Unknown waypoint_mode: {mode}")
