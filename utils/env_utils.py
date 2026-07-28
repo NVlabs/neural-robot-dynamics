@@ -56,7 +56,4 @@ def create_abstract_contact_env(
         env_args[key] = extra_env_args[key]
     env = ENV_CLS[env_name](**env_args)
         
-    return AbstractContactEnvironment(
-        env,
-        native_contact_detection=bool(extra_env_args.get("inter_robot_collisions", False)),
-    )
+    return AbstractContactEnvironment(env)
