@@ -462,7 +462,6 @@ class AnymalEnvironment(Environment):
         obs_type="dflex",
         camera_tracking=False,
         heading_yaws=None,
-        inter_robot_collisions=False,
         waypoints=None,
         waypoint_tolerance=0.75,
         terminate_on_last_waypoint=False,
@@ -475,12 +474,7 @@ class AnymalEnvironment(Environment):
         self.obs_type = obs_type
         self.camera_tracking = camera_tracking
         self.task = task
-        self.inter_robot_collisions = inter_robot_collisions
-        if self.inter_robot_collisions:
-            # Build every robot in one collision group and use Warp's dynamic
-            # contact generation so articulated robots can collide with each other.
-            self.separate_collision_group_per_env = False
-            self.separate_ground_contacts = False
+
         num_envs = kwargs.get("num_envs", self.num_envs)
         self.waypoints = None
         self.waypoint_tolerance = float(waypoint_tolerance)

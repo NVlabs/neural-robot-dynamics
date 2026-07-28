@@ -80,7 +80,7 @@ directions, run:
 ```bash
 python run_rl.py --rl-cfg ./cfg/Anymal/anymal_two_directions.yaml --playback ../../pretrained_models/RL_policies/Anymal/forward_walk/0/nn/AnymalPPO.pth --render
 ```
-
+<!-- 
 To place two ANYmal robots in the same collision scene, facing one another,
 run the ground-truth-only interaction example:
 
@@ -90,7 +90,7 @@ python run_rl.py --rl-cfg ./cfg/Anymal/anymal_two_robot_interaction.yaml --playb
 
 This enables robot--robot collisions in Warp. NeRD mode does not yet support
 these dynamic contacts; its learned contact representation is limited to
-robot--ground contacts.
+robot--ground contacts. -->
 
 Warp uses Y as the up axis in this project, so `0` degrees faces world +X and
 `-90` degrees faces world +Z (the second horizontal, or requested Y, direction).
